@@ -1,0 +1,19 @@
+<xml xmlns="http://www.w3.org/1999/xhtml">
+  <block type="trade"><field name="type">BUY</field><field name="symbol">AAPL</field><value name="price"><block type="math_number"><field name="NUM">150</field></block></value><value name="quantity"><block type="math_number"><field name="NUM">10</field></block></value></block>
+  <block type="conditions">
+    <value name="CALL">
+      <block type="logic_operation"><field name="OP">AND</field>
+        <value name="A"><block type="variables_get"><field name="upper_band">upper_band</field></block></value>
+        <value name="B"><block type="variables_get"><field name="lower_band">lower_band</field></block></value>
+      </block>
+    </value>
+  </block>
+  <block type="conditions">
+    <value name="PUT">
+      <block type="logic_operation"><field name="OP">AND</field>
+        <value name="A"><block type="variables_get"><field name="upper_band">upper_band</field></block></value>
+        <value name="B"><block type="variables_get"><field name="lower_band">lower_band</field></block></value>
+      </block>
+    </value>
+  </block>
+</xml>
