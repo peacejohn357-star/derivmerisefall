@@ -13,6 +13,18 @@
     <variable id="v_ema_fast">ema_fast</variable>
     <variable id="v_ema_slow">ema_slow</variable>
     <variable id="v_adx">adx_value</variable>
+    <variable id="v_prev_close">prev_close</variable>
+    <variable id="v_prev_high">prev_high</variable>
+    <variable id="v_prev_low">prev_low</variable>
+    <variable id="v_tr">tr</variable>
+    <variable id="v_plus_dm">plus_dm</variable>
+    <variable id="v_minus_dm">minus_dm</variable>
+    <variable id="v_smooth_tr">smooth_tr</variable>
+    <variable id="v_smooth_plus_dm">smooth_plus_dm</variable>
+    <variable id="v_smooth_minus_dm">smooth_minus_dm</variable>
+    <variable id="v_plus_di">plus_di</variable>
+    <variable id="v_minus_di">minus_di</variable>
+    <variable id="v_dx">dx</variable>
   </variables>
 
   <block type="trade_definition" id="td_main" deletable="false" x="0" y="0">
@@ -90,6 +102,66 @@
                             <field name="NUM">20</field>
                           </block>
                         </value>
+                        <next>
+                          <block type="variables_set" id="init_smooth_tr">
+                            <field name="VAR" id="v_smooth_tr">smooth_tr</field>
+                            <value name="VALUE">
+                              <block type="math_number" id="init_smooth_tr_val">
+                                <field name="NUM">1</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="variables_set" id="init_smooth_pdm">
+                                <field name="VAR" id="v_smooth_plus_dm">smooth_plus_dm</field>
+                                <value name="VALUE">
+                                  <block type="math_number" id="init_smooth_pdm_val">
+                                    <field name="NUM">0</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="variables_set" id="init_smooth_mdm">
+                                    <field name="VAR" id="v_smooth_minus_dm">smooth_minus_dm</field>
+                                    <value name="VALUE">
+                                      <block type="math_number" id="init_smooth_mdm_val">
+                                        <field name="NUM">0</field>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="variables_set" id="init_prev_close">
+                                        <field name="VAR" id="v_prev_close">prev_close</field>
+                                        <value name="VALUE">
+                                          <block type="math_number" id="init_prev_close_val">
+                                            <field name="NUM">0</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="variables_set" id="init_prev_high">
+                                            <field name="VAR" id="v_prev_high">prev_high</field>
+                                            <value name="VALUE">
+                                              <block type="math_number" id="init_prev_high_val">
+                                                <field name="NUM">0</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="variables_set" id="init_prev_low">
+                                                <field name="VAR" id="v_prev_low">prev_low</field>
+                                                <value name="VALUE">
+                                                  <block type="math_number" id="init_prev_low_val">
+                                                    <field name="NUM">0</field>
+                                                  </block>
+                                                </value>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
                       </block>
                     </next>
                   </block>
@@ -215,516 +287,1046 @@
           </block>
         </statement>
         <statement name="ELSE">
-          <!-- CALCULATE ADX -->
-          <block type="adx_statement" id="set_adx">
-            <field name="VARIABLE" id="v_adx">adx_value</field>
-            <statement name="STATEMENT">
-              <block type="input_list" id="adx_input" deletable="false" movable="false">
-                <value name="INPUT_LIST">
-                  <block type="ticks" id="adx_ticks" deletable="false" movable="false"></block>
+          <!-- CUSTOM ADX CALCULATION FOR STEP INDEX 100 -->
+          <block type="variables_set" id="adx_set_tr">
+            <field name="VAR" id="v_tr">tr</field>
+            <value name="VALUE">
+              <block type="math_arithmetic" id="adx_tr_hl">
+                <field name="OP">MINUS</field>
+                <value name="A">
+                  <block type="candle_high" id="adx_h1"></block>
                 </value>
-                <next>
-                  <block type="period" id="adx_period" deletable="false" movable="false">
-                    <value name="PERIOD">
-                      <shadow type="math_number" id="adx_period_val">
-                        <field name="NUM">14</field>
-                      </shadow>
+                <value name="B">
+                  <block type="candle_low" id="adx_l1"></block>
+                </value>
+              </block>
+            </value>
+            <next>
+              <block type="controls_if" id="adx_tr_check1">
+                <value name="IF0">
+                  <block type="logic_compare" id="adx_tr_cmp1">
+                    <field name="OP">GT</field>
+                    <value name="A">
+                      <block type="math_single" id="adx_abs_hpc1">
+                        <field name="OP">ABS</field>
+                        <value name="NUM">
+                          <block type="math_arithmetic" id="adx_h_pc1">
+                            <field name="OP">MINUS</field>
+                            <value name="A">
+                              <block type="candle_high" id="adx_h2"></block>
+                            </value>
+                            <value name="B">
+                              <block type="variables_get" id="adx_gpc1"><field name="VAR" id="v_prev_close">prev_close</field></block>
+                            </value>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <value name="B">
+                      <block type="variables_get" id="adx_gtr1"><field name="VAR" id="v_tr">tr</field></block>
                     </value>
                   </block>
-                </next>
-              </block>
-            </statement>
-            <next>
-              <!-- BOLLINGER BANDS -->
-              <block type="bb_statement" id="set_bb_upper">
-                <field name="VARIABLE" id="v_bb_upper">upper_band</field>
-                <field name="BBRESULT_LIST">1</field>
-                <statement name="STATEMENT">
-                  <block type="input_list" id="bb_upper_input" deletable="false" movable="false">
-                    <value name="INPUT_LIST">
-                      <block type="ticks" id="bb_upper_ticks" deletable="false" movable="false"></block>
-                    </value>
-                    <next>
-                      <block type="period" id="bb_upper_period" deletable="false" movable="false">
-                        <value name="PERIOD">
-                          <shadow type="math_number" id="bb_upper_period_val">
-                            <field name="NUM">15</field>
-                          </shadow>
-                        </value>
-                        <next>
-                          <block type="std_dev_multiplier_up" id="bb_upper_dev_up" deletable="false" movable="false">
-                            <value name="UPMULTIPLIER">
-                              <shadow type="math_number" id="bb_upper_dev_up_val">
-                                <field name="NUM">2</field>
-                              </shadow>
+                </value>
+                <statement name="DO0">
+                  <block type="variables_set" id="adx_utr1">
+                    <field name="VAR" id="v_tr">tr</field>
+                    <value name="VALUE">
+                      <block type="math_single" id="adx_abs_hpc2">
+                        <field name="OP">ABS</field>
+                        <value name="NUM">
+                          <block type="math_arithmetic" id="adx_h_pc2">
+                            <field name="OP">MINUS</field>
+                            <value name="A">
+                              <block type="candle_high" id="adx_h3"></block>
                             </value>
-                            <next>
-                              <block type="std_dev_multiplier_down" id="bb_upper_dev_down" deletable="false" movable="false">
-                                <value name="DOWNMULTIPLIER">
-                                  <shadow type="math_number" id="bb_upper_dev_down_val">
-                                    <field name="NUM">2</field>
-                                  </shadow>
-                                </value>
-                              </block>
-                            </next>
+                            <value name="B">
+                              <block type="variables_get" id="adx_gpc2"><field name="VAR" id="v_prev_close">prev_close</field></block>
+                            </value>
                           </block>
-                        </next>
+                        </value>
                       </block>
-                    </next>
+                    </value>
                   </block>
                 </statement>
                 <next>
-                  <block type="bb_statement" id="set_bb_middle">
-                    <field name="VARIABLE" id="v_bb_middle">middle_band</field>
-                    <field name="BBRESULT_LIST">0</field>
-                    <statement name="STATEMENT">
-                      <block type="input_list" id="bb_middle_input" deletable="false" movable="false">
-                        <value name="INPUT_LIST">
-                          <block type="ticks" id="bb_middle_ticks" deletable="false" movable="false"></block>
-                        </value>
-                        <next>
-                          <block type="period" id="bb_middle_period" deletable="false" movable="false">
-                            <value name="PERIOD">
-                              <shadow type="math_number" id="bb_middle_period_val">
-                                <field name="NUM">15</field>
-                              </shadow>
-                            </value>
-                            <next>
-                              <block type="std_dev_multiplier_up" id="bb_middle_dev_up" deletable="false" movable="false">
-                                <value name="UPMULTIPLIER">
-                                  <shadow type="math_number" id="bb_middle_dev_up_val">
-                                    <field name="NUM">2</field>
-                                  </shadow>
+                  <block type="controls_if" id="adx_tr_check2">
+                    <value name="IF0">
+                      <block type="logic_compare" id="adx_tr_cmp2">
+                        <field name="OP">GT</field>
+                        <value name="A">
+                          <block type="math_single" id="adx_abs_lpc1">
+                            <field name="OP">ABS</field>
+                            <value name="NUM">
+                              <block type="math_arithmetic" id="adx_l_pc1">
+                                <field name="OP">MINUS</field>
+                                <value name="A">
+                                  <block type="candle_low" id="adx_l2"></block>
                                 </value>
-                                <next>
-                                  <block type="std_dev_multiplier_down" id="bb_middle_dev_down" deletable="false" movable="false">
-                                    <value name="DOWNMULTIPLIER">
-                                      <shadow type="math_number" id="bb_middle_dev_down_val">
-                                        <field name="NUM">2</field>
-                                      </shadow>
-                                    </value>
-                                  </block>
-                                </next>
+                                <value name="B">
+                                  <block type="variables_get" id="adx_gpc3"><field name="VAR" id="v_prev_close">prev_close</field></block>
+                                </value>
                               </block>
-                            </next>
+                            </value>
                           </block>
-                        </next>
+                        </value>
+                        <value name="B">
+                          <block type="variables_get" id="adx_gtr2"><field name="VAR" id="v_tr">tr</field></block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="variables_set" id="adx_utr2">
+                        <field name="VAR" id="v_tr">tr</field>
+                        <value name="VALUE">
+                          <block type="math_single" id="adx_abs_lpc2">
+                            <field name="OP">ABS</field>
+                            <value name="NUM">
+                              <block type="math_arithmetic" id="adx_l_pc2">
+                                <field name="OP">MINUS</field>
+                                <value name="A">
+                                  <block type="candle_low" id="adx_l3"></block>
+                                </value>
+                                <value name="B">
+                                  <block type="variables_get" id="adx_gpc4"><field name="VAR" id="v_prev_close">prev_close</field></block>
+                                </value>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
                       </block>
                     </statement>
                     <next>
-                      <block type="bb_statement" id="set_bb_lower">
-                        <field name="VARIABLE" id="v_bb_lower">lower_band</field>
-                        <field name="BBRESULT_LIST">2</field>
-                        <statement name="STATEMENT">
-                          <block type="input_list" id="bb_lower_input" deletable="false" movable="false">
-                            <value name="INPUT_LIST">
-                              <block type="ticks" id="bb_lower_ticks" deletable="false" movable="false"></block>
-                            </value>
-                            <next>
-                              <block type="period" id="bb_lower_period" deletable="false" movable="false">
-                                <value name="PERIOD">
-                                  <shadow type="math_number" id="bb_lower_period_val">
-                                    <field name="NUM">15</field>
-                                  </shadow>
-                                </value>
-                                <next>
-                                  <block type="std_dev_multiplier_up" id="bb_lower_dev_up" deletable="false" movable="false">
-                                    <value name="UPMULTIPLIER">
-                                      <shadow type="math_number" id="bb_lower_dev_up_val">
-                                        <field name="NUM">2</field>
-                                      </shadow>
-                                    </value>
-                                    <next>
-                                      <block type="std_dev_multiplier_down" id="bb_lower_dev_down" deletable="false" movable="false">
-                                        <value name="DOWNMULTIPLIER">
-                                          <shadow type="math_number" id="bb_lower_dev_down_val">
-                                            <field name="NUM">2</field>
-                                          </shadow>
-                                        </value>
-                                      </block>
-                                    </next>
-                                  </block>
-                                </next>
-                              </block>
-                            </next>
-                          </block>
-                        </statement>
-                        <next>
-                          <block type="variables_set" id="set_bb_width">
-                            <field name="VAR" id="v_bb_width">bb_width</field>
-                            <value name="VALUE">
-                              <block type="math_arithmetic" id="bb_width_calc">
-                                <field name="OP">MINUS</field>
+                      <block type="controls_if" id="adx_plus_dm_if">
+                        <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+                        <value name="IF0">
+                          <block type="logic_operation" id="adx_pdm_cond">
+                            <field name="OP">AND</field>
+                            <value name="A">
+                              <block type="logic_compare" id="adx_pdm_c1">
+                                <field name="OP">GT</field>
                                 <value name="A">
-                                  <block type="variables_get" id="bb_width_upper">
-                                    <field name="VAR" id="v_bb_upper">upper_band</field>
+                                  <block type="math_arithmetic" id="adx_h_ph1">
+                                    <field name="OP">MINUS</field>
+                                    <value name="A">
+                                      <block type="candle_high" id="adx_h4"></block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="variables_get" id="adx_gph1"><field name="VAR" id="v_prev_high">prev_high</field></block>
+                                    </value>
                                   </block>
                                 </value>
                                 <value name="B">
-                                  <block type="variables_get" id="bb_width_lower">
-                                    <field name="VAR" id="v_bb_lower">lower_band</field>
+                                  <block type="math_number" id="adx_z1"><field name="NUM">0</field></block>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="B">
+                              <block type="logic_compare" id="adx_pdm_c2">
+                                <field name="OP">GT</field>
+                                <value name="A">
+                                  <block type="math_arithmetic" id="adx_h_ph2">
+                                    <field name="OP">MINUS</field>
+                                    <value name="A">
+                                      <block type="candle_high" id="adx_h5"></block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="variables_get" id="adx_gph2"><field name="VAR" id="v_prev_high">prev_high</field></block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="math_arithmetic" id="adx_pl_l1">
+                                    <field name="OP">MINUS</field>
+                                    <value name="A">
+                                      <block type="variables_get" id="adx_gpl1"><field name="VAR" id="v_prev_low">prev_low</field></block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="candle_low" id="adx_l4"></block>
+                                    </value>
                                   </block>
                                 </value>
                               </block>
                             </value>
+                          </block>
+                        </value>
+                        <statement name="DO0">
+                          <block type="variables_set" id="adx_spdm_val">
+                            <field name="VAR" id="v_plus_dm">plus_dm</field>
+                            <value name="VALUE">
+                              <block type="math_arithmetic" id="adx_h_ph3">
+                                <field name="OP">MINUS</field>
+                                <value name="A">
+                                  <block type="candle_high" id="adx_h6"></block>
+                                </value>
+                                <value name="B">
+                                  <block type="variables_get" id="adx_gph3"><field name="VAR" id="v_prev_high">prev_high</field></block>
+                                </value>
+                              </block>
+                            </value>
+                          </block>
+                        </statement>
+                        <statement name="ELSE">
+                          <block type="variables_set" id="adx_spdm_zero">
+                            <field name="VAR" id="v_plus_dm">plus_dm</field>
+                            <value name="VALUE">
+                              <block type="math_number" id="adx_pdm_z"><field name="NUM">0</field></block>
+                            </value>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="controls_if" id="adx_minus_dm_if">
+                            <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+                            <value name="IF0">
+                              <block type="logic_operation" id="adx_mdm_cond">
+                                <field name="OP">AND</field>
+                                <value name="A">
+                                  <block type="logic_compare" id="adx_mdm_c1">
+                                    <field name="OP">GT</field>
+                                    <value name="A">
+                                      <block type="math_arithmetic" id="adx_pl_l2">
+                                        <field name="OP">MINUS</field>
+                                        <value name="A">
+                                          <block type="variables_get" id="adx_gpl2"><field name="VAR" id="v_prev_low">prev_low</field></block>
+                                        </value>
+                                        <value name="B">
+                                          <block type="candle_low" id="adx_l5"></block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="math_number" id="adx_z2"><field name="NUM">0</field></block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="logic_compare" id="adx_mdm_c2">
+                                    <field name="OP">GT</field>
+                                    <value name="A">
+                                      <block type="math_arithmetic" id="adx_pl_l3">
+                                        <field name="OP">MINUS</field>
+                                        <value name="A">
+                                          <block type="variables_get" id="adx_gpl3"><field name="VAR" id="v_prev_low">prev_low</field></block>
+                                        </value>
+                                        <value name="B">
+                                          <block type="candle_low" id="adx_l6"></block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="math_arithmetic" id="adx_h_ph4">
+                                        <field name="OP">MINUS</field>
+                                        <value name="A">
+                                          <block type="candle_high" id="adx_h7"></block>
+                                        </value>
+                                        <value name="B">
+                                          <block type="variables_get" id="adx_gph4"><field name="VAR" id="v_prev_high">prev_high</field></block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <statement name="DO0">
+                              <block type="variables_set" id="adx_smdm_val">
+                                <field name="VAR" id="v_minus_dm">minus_dm</field>
+                                <value name="VALUE">
+                                  <block type="math_arithmetic" id="adx_pl_l4">
+                                    <field name="OP">MINUS</field>
+                                    <value name="A">
+                                      <block type="variables_get" id="adx_gpl4"><field name="VAR" id="v_prev_low">prev_low</field></block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="candle_low" id="adx_l7"></block>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </statement>
+                            <statement name="ELSE">
+                              <block type="variables_set" id="adx_smdm_zero">
+                                <field name="VAR" id="v_minus_dm">minus_dm</field>
+                                <value name="VALUE">
+                                  <block type="math_number" id="adx_mdm_z"><field name="NUM">0</field></block>
+                                </value>
+                              </block>
+                            </statement>
                             <next>
-                              <block type="rsi_statement" id="set_rsi">
-                                <field name="VARIABLE" id="v_rsi">rsi_value</field>
-                                <statement name="STATEMENT">
-                                  <block type="input_list" id="rsi_input" deletable="false" movable="false">
-                                    <value name="INPUT_LIST">
-                                      <block type="ticks" id="rsi_ticks" deletable="false" movable="false"></block>
+                              <block type="variables_set" id="adx_smooth_tr">
+                                <field name="VAR" id="v_smooth_tr">smooth_tr</field>
+                                <value name="VALUE">
+                                  <block type="math_arithmetic" id="adx_str_calc">
+                                    <field name="OP">ADD</field>
+                                    <value name="A">
+                                      <block type="math_arithmetic" id="adx_str_sub">
+                                        <field name="OP">MINUS</field>
+                                        <value name="A">
+                                          <block type="variables_get" id="adx_gstr1"><field name="VAR" id="v_smooth_tr">smooth_tr</field></block>
+                                        </value>
+                                        <value name="B">
+                                          <block type="math_arithmetic" id="adx_str_div">
+                                            <field name="OP">DIVIDE</field>
+                                            <value name="A">
+                                              <block type="variables_get" id="adx_gstr2"><field name="VAR" id="v_smooth_tr">smooth_tr</field></block>
+                                            </value>
+                                            <value name="B">
+                                              <block type="math_number" id="adx_p14a"><field name="NUM">14</field></block>
+                                            </value>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="variables_get" id="adx_gtr3"><field name="VAR" id="v_tr">tr</field></block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="variables_set" id="adx_smooth_pdm">
+                                    <field name="VAR" id="v_smooth_plus_dm">smooth_plus_dm</field>
+                                    <value name="VALUE">
+                                      <block type="math_arithmetic" id="adx_spdm_calc">
+                                        <field name="OP">ADD</field>
+                                        <value name="A">
+                                          <block type="math_arithmetic" id="adx_spdm_sub">
+                                            <field name="OP">MINUS</field>
+                                            <value name="A">
+                                              <block type="variables_get" id="adx_gspdm1"><field name="VAR" id="v_smooth_plus_dm">smooth_plus_dm</field></block>
+                                            </value>
+                                            <value name="B">
+                                              <block type="math_arithmetic" id="adx_spdm_div">
+                                                <field name="OP">DIVIDE</field>
+                                                <value name="A">
+                                                  <block type="variables_get" id="adx_gspdm2"><field name="VAR" id="v_smooth_plus_dm">smooth_plus_dm</field></block>
+                                                </value>
+                                                <value name="B">
+                                                  <block type="math_number" id="adx_p14b"><field name="NUM">14</field></block>
+                                                </value>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </value>
+                                        <value name="B">
+                                          <block type="variables_get" id="adx_gpdm1"><field name="VAR" id="v_plus_dm">plus_dm</field></block>
+                                        </value>
+                                      </block>
                                     </value>
                                     <next>
-                                      <block type="period" id="rsi_period" deletable="false" movable="false">
-                                        <value name="PERIOD">
-                                          <shadow type="math_number" id="rsi_period_val">
-                                            <field name="NUM">14</field>
-                                          </shadow>
-                                        </value>
-                                      </block>
-                                    </next>
-                                  </block>
-                                </statement>
-                                <next>
-                                  <block type="ema_statement" id="set_ema_fast">
-                                    <field name="VARIABLE" id="v_ema_fast">ema_fast</field>
-                                    <statement name="STATEMENT">
-                                      <block type="input_list" id="ema_fast_input" deletable="false" movable="false">
-                                        <value name="INPUT_LIST">
-                                          <block type="ticks" id="ema_fast_ticks" deletable="false" movable="false"></block>
-                                        </value>
-                                        <next>
-                                          <block type="period" id="ema_fast_period" deletable="false" movable="false">
-                                            <value name="PERIOD">
-                                              <shadow type="math_number" id="ema_fast_period_val">
-                                                <field name="NUM">15</field>
-                                              </shadow>
+                                      <block type="variables_set" id="adx_smooth_mdm">
+                                        <field name="VAR" id="v_smooth_minus_dm">smooth_minus_dm</field>
+                                        <value name="VALUE">
+                                          <block type="math_arithmetic" id="adx_smdm_calc">
+                                            <field name="OP">ADD</field>
+                                            <value name="A">
+                                              <block type="math_arithmetic" id="adx_smdm_sub">
+                                                <field name="OP">MINUS</field>
+                                                <value name="A">
+                                                  <block type="variables_get" id="adx_gsmdm1"><field name="VAR" id="v_smooth_minus_dm">smooth_minus_dm</field></block>
+                                                </value>
+                                                <value name="B">
+                                                  <block type="math_arithmetic" id="adx_smdm_div">
+                                                    <field name="OP">DIVIDE</field>
+                                                    <value name="A">
+                                                      <block type="variables_get" id="adx_gsmdm2"><field name="VAR" id="v_smooth_minus_dm">smooth_minus_dm</field></block>
+                                                    </value>
+                                                    <value name="B">
+                                                      <block type="math_number" id="adx_p14c"><field name="NUM">14</field></block>
+                                                    </value>
+                                                  </block>
+                                                </value>
+                                              </block>
+                                            </value>
+                                            <value name="B">
+                                              <block type="variables_get" id="adx_gmdm1"><field name="VAR" id="v_minus_dm">minus_dm</field></block>
                                             </value>
                                           </block>
-                                        </next>
-                                      </block>
-                                    </statement>
-                                    <next>
-                                      <block type="ema_statement" id="set_ema_slow">
-                                        <field name="VARIABLE" id="v_ema_slow">ema_slow</field>
-                                        <statement name="STATEMENT">
-                                          <block type="input_list" id="ema_slow_input" deletable="false" movable="false">
-                                            <value name="INPUT_LIST">
-                                              <block type="ticks" id="ema_slow_ticks" deletable="false" movable="false"></block>
+                                        </value>
+                                        <next>
+                                          <block type="variables_set" id="adx_set_plus_di">
+                                            <field name="VAR" id="v_plus_di">plus_di</field>
+                                            <value name="VALUE">
+                                              <block type="math_arithmetic" id="adx_pdi_calc">
+                                                <field name="OP">DIVIDE</field>
+                                                <value name="A">
+                                                  <block type="math_arithmetic" id="adx_pdi_mul">
+                                                    <field name="OP">MULTIPLY</field>
+                                                    <value name="A">
+                                                      <block type="math_number" id="adx_100a"><field name="NUM">100</field></block>
+                                                    </value>
+                                                    <value name="B">
+                                                      <block type="variables_get" id="adx_gspdm3"><field name="VAR" id="v_smooth_plus_dm">smooth_plus_dm</field></block>
+                                                    </value>
+                                                  </block>
+                                                </value>
+                                                <value name="B">
+                                                  <block type="variables_get" id="adx_gstr5"><field name="VAR" id="v_smooth_tr">smooth_tr</field></block>
+                                                </value>
+                                              </block>
                                             </value>
                                             <next>
-                                              <block type="period" id="ema_slow_period" deletable="false" movable="false">
-                                                <value name="PERIOD">
-                                                  <shadow type="math_number" id="ema_slow_period_val">
-                                                    <field name="NUM">50</field>
-                                                  </shadow>
-                                                </value>
-                                              </block>
-                                            </next>
-                                          </block>
-                                        </statement>
-                                        <next>
-                                          <block type="controls_if" id="entry_decision">
-                                            <mutation xmlns="http://www.w3.org/1999/xhtml" elseif="1"></mutation>
-                                            <value name="IF0">
-                                              <block type="logic_operation" id="call_all_conditions">
-                                                <field name="OP">AND</field>
-                                                <value name="A">
-                                                  <block type="logic_operation" id="call_conditions">
-                                                    <field name="OP">AND</field>
+                                              <block type="variables_set" id="adx_set_minus_di">
+                                                <field name="VAR" id="v_minus_di">minus_di</field>
+                                                <value name="VALUE">
+                                                  <block type="math_arithmetic" id="adx_mdi_calc">
+                                                    <field name="OP">DIVIDE</field>
                                                     <value name="A">
-                                                      <block type="logic_operation" id="call_conditions_left">
-                                                        <field name="OP">AND</field>
+                                                      <block type="math_arithmetic" id="adx_mdi_mul">
+                                                        <field name="OP">MULTIPLY</field>
                                                         <value name="A">
-                                                          <block type="logic_operation" id="call_price_width">
-                                                            <field name="OP">AND</field>
-                                                            <value name="A">
-                                                              <block type="logic_compare" id="call_tick_upper">
-                                                                <field name="OP">GT</field>
-                                                                <value name="A">
-                                                                  <block type="tick" id="call_tick"></block>
-                                                                </value>
-                                                                <value name="B">
-                                                                  <block type="variables_get" id="call_upper_band">
-                                                                    <field name="VAR" id="v_bb_middle">middle_band</field>
-                                                                  </block>
-                                                                </value>
-                                                              </block>
-                                                            </value>
-                                                            <value name="B">
-                                                              <block type="logic_operation" id="call_bb_range_check">
-                                                                <field name="OP">AND</field>
-                                                                <value name="A">
-                                                                  <block type="logic_compare" id="call_bb_width_min">
-                                                                    <field name="OP">GT</field>
-                                                                    <value name="A">
-                                                                      <block type="variables_get" id="call_bb_width_val_min">
-                                                                        <field name="VAR" id="v_bb_width">bb_width</field>
-                                                                      </block>
-                                                                    </value>
-                                                                    <value name="B">
-                                                                      <block type="math_number" id="call_bb_min_threshold">
-                                                                        <field name="NUM">0.2</field>
-                                                                      </block>
-                                                                    </value>
-                                                                  </block>
-                                                                </value>
-                                                                <value name="B">
-                                                                  <block type="logic_compare" id="call_bb_width_max">
-                                                                    <field name="OP">LT</field>
-                                                                    <value name="A">
-                                                                      <block type="variables_get" id="call_bb_width_val_max">
-                                                                        <field name="VAR" id="v_bb_width">bb_width</field>
-                                                                      </block>
-                                                                    </value>
-                                                                    <value name="B">
-                                                                      <block type="math_number" id="call_bb_max_threshold">
-                                                                        <field name="NUM">0.4</field>
-                                                                      </block>
-                                                                    </value>
-                                                                  </block>
-                                                                </value>
-                                                              </block>
-                                                            </value>
-                                                          </block>
+                                                          <block type="math_number" id="adx_100b"><field name="NUM">100</field></block>
                                                         </value>
                                                         <value name="B">
-                                                          <block type="logic_operation" id="call_rsi_range">
-                                                            <field name="OP">AND</field>
-                                                            <value name="A">
-                                                              <block type="logic_compare" id="call_rsi_low">
-                                                                <field name="OP">GT</field>
-                                                                <value name="A">
-                                                                  <block type="variables_get" id="call_rsi_val1">
-                                                                    <field name="VAR" id="v_rsi">rsi_value</field>
-                                                                  </block>
-                                                                </value>
-                                                                <value name="B">
-                                                                  <block type="math_number" id="call_rsi_min">
-                                                                    <field name="NUM">60</field>
-                                                                  </block>
-                                                                </value>
-                                                              </block>
-                                                            </value>
-                                                            <value name="B">
-                                                              <block type="logic_compare" id="call_rsi_high">
-                                                                <field name="OP">LT</field>
-                                                                <value name="A">
-                                                                  <block type="variables_get" id="call_rsi_val2">
-                                                                    <field name="VAR" id="v_rsi">rsi_value</field>
-                                                                  </block>
-                                                                </value>
-                                                                <value name="B">
-                                                                  <block type="math_number" id="call_rsi_max">
-                                                                    <field name="NUM">70</field>
-                                                                  </block>
-                                                                </value>
-                                                              </block>
-                                                            </value>
-                                                          </block>
+                                                          <block type="variables_get" id="adx_gsmdm3"><field name="VAR" id="v_smooth_minus_dm">smooth_minus_dm</field></block>
                                                         </value>
                                                       </block>
                                                     </value>
                                                     <value name="B">
-                                                      <block type="logic_compare" id="call_ema_trend">
+                                                      <block type="variables_get" id="adx_gstr6"><field name="VAR" id="v_smooth_tr">smooth_tr</field></block>
+                                                    </value>
+                                                  </block>
+                                                </value>
+                                                <next>
+                                                  <block type="controls_if" id="adx_dx_if">
+                                                    <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+                                                    <value name="IF0">
+                                                      <block type="logic_compare" id="adx_dx_cond">
                                                         <field name="OP">GT</field>
                                                         <value name="A">
-                                                          <block type="variables_get" id="call_ema_fast">
-                                                            <field name="VAR" id="v_ema_fast">ema_fast</field>
+                                                          <block type="math_arithmetic" id="adx_di_sum_c">
+                                                            <field name="OP">ADD</field>
+                                                            <value name="A">
+                                                              <block type="variables_get" id="adx_gpdi1"><field name="VAR" id="v_plus_di">plus_di</field></block>
+                                                            </value>
+                                                            <value name="B">
+                                                              <block type="variables_get" id="adx_gmdi1"><field name="VAR" id="v_minus_di">minus_di</field></block>
+                                                            </value>
                                                           </block>
                                                         </value>
                                                         <value name="B">
-                                                          <block type="variables_get" id="call_ema_slow">
-                                                            <field name="VAR" id="v_ema_slow">ema_slow</field>
-                                                          </block>
+                                                          <block type="math_number" id="adx_z3"><field name="NUM">0</field></block>
                                                         </value>
                                                       </block>
                                                     </value>
-                                                  </block>
-                                                </value>
-                                                <value name="B">
-                                                  <block type="logic_compare" id="call_adx_strong">
-                                                    <field name="OP">GT</field>
-                                                    <value name="A">
-                                                      <block type="variables_get" id="call_adx_val">
-                                                        <field name="VAR" id="v_adx">adx_value</field>
-                                                      </block>
-                                                    </value>
-                                                    <value name="B">
-                                                      <block type="math_number" id="call_adx_threshold">
-                                                        <field name="NUM">20</field>
-                                                      </block>
-                                                    </value>
-                                                  </block>
-                                                </value>
-                                              </block>
-                                            </value>
-                                            <statement name="DO0">
-                                              <block type="controls_if" id="call_position_guard">
-                                                <value name="IF0">
-                                                  <block type="logic_negate" id="call_not_selling">
-                                                    <value name="BOOL">
-                                                      <block type="check_sell" id="call_check_sell"></block>
-                                                    </value>
-                                                  </block>
-                                                </value>
-                                                <statement name="DO0">
-                                                  <block type="purchase" id="buy_call">
-                                                    <field name="PURCHASE_LIST">CALL</field>
-                                                  </block>
-                                                </statement>
-                                              </block>
-                                            </statement>
-                                            <value name="IF1">
-                                              <block type="logic_operation" id="put_all_conditions">
-                                                <field name="OP">AND</field>
-                                                <value name="A">
-                                                  <block type="logic_operation" id="put_conditions">
-                                                    <field name="OP">AND</field>
-                                                    <value name="A">
-                                                      <block type="logic_operation" id="put_conditions_left">
-                                                        <field name="OP">AND</field>
-                                                        <value name="A">
-                                                          <block type="logic_operation" id="put_price_width">
-                                                            <field name="OP">AND</field>
+                                                    <statement name="DO0">
+                                                      <block type="variables_set" id="adx_dx_val">
+                                                        <field name="VAR" id="v_dx">dx</field>
+                                                        <value name="VALUE">
+                                                          <block type="math_arithmetic" id="adx_dx_calc">
+                                                            <field name="OP">DIVIDE</field>
                                                             <value name="A">
-                                                              <block type="logic_compare" id="put_tick_lower">
-                                                                <field name="OP">LT</field>
+                                                              <block type="math_arithmetic" id="adx_dx_mul">
+                                                                <field name="OP">MULTIPLY</field>
                                                                 <value name="A">
-                                                                  <block type="tick" id="put_tick"></block>
+                                                                  <block type="math_number" id="adx_100c"><field name="NUM">100</field></block>
                                                                 </value>
                                                                 <value name="B">
-                                                                  <block type="variables_get" id="put_lower_band">
-                                                                    <field name="VAR" id="v_bb_middle">middle_band</field>
+                                                                  <block type="math_single" id="adx_abs_di_diff">
+                                                                    <field name="OP">ABS</field>
+                                                                    <value name="NUM">
+                                                                      <block type="math_arithmetic" id="adx_di_diff">
+                                                                        <field name="OP">MINUS</field>
+                                                                        <value name="A">
+                                                                          <block type="variables_get" id="adx_gpdi2"><field name="VAR" id="v_plus_di">plus_di</field></block>
+                                                                        </value>
+                                                                        <value name="B">
+                                                                          <block type="variables_get" id="adx_gmdi2"><field name="VAR" id="v_minus_di">minus_di</field></block>
+                                                                        </value>
+                                                                      </block>
+                                                                    </value>
                                                                   </block>
                                                                 </value>
                                                               </block>
                                                             </value>
                                                             <value name="B">
-                                                              <block type="logic_operation" id="put_bb_range_check">
-                                                                <field name="OP">AND</field>
+                                                              <block type="math_arithmetic" id="adx_di_sum_b">
+                                                                <field name="OP">ADD</field>
                                                                 <value name="A">
-                                                                  <block type="logic_compare" id="put_bb_width_min">
-                                                                    <field name="OP">GT</field>
-                                                                    <value name="A">
-                                                                      <block type="variables_get" id="put_bb_width_val_min">
-                                                                        <field name="VAR" id="v_bb_width">bb_width</field>
-                                                                      </block>
-                                                                    </value>
-                                                                    <value name="B">
-                                                                      <block type="math_number" id="put_bb_min_threshold">
-                                                                        <field name="NUM">0.2</field>
-                                                                      </block>
-                                                                    </value>
-                                                                  </block>
+                                                                  <block type="variables_get" id="adx_gpdi3"><field name="VAR" id="v_plus_di">plus_di</field></block>
                                                                 </value>
                                                                 <value name="B">
-                                                                  <block type="logic_compare" id="put_bb_width_max">
-                                                                    <field name="OP">LT</field>
-                                                                    <value name="A">
-                                                                      <block type="variables_get" id="put_bb_width_val_max">
-                                                                        <field name="VAR" id="v_bb_width">bb_width</field>
-                                                                      </block>
-                                                                    </value>
-                                                                    <value name="B">
-                                                                      <block type="math_number" id="put_bb_max_threshold">
-                                                                        <field name="NUM">0.4</field>
-                                                                      </block>
-                                                                    </value>
-                                                                  </block>
+                                                                  <block type="variables_get" id="adx_gmdi3"><field name="VAR" id="v_minus_di">minus_di</field></block>
                                                                 </value>
                                                               </block>
                                                             </value>
                                                           </block>
                                                         </value>
-                                                        <value name="B">
-                                                          <block type="logic_operation" id="put_rsi_range">
-                                                            <field name="OP">AND</field>
+                                                      </block>
+                                                    </statement>
+                                                    <statement name="ELSE">
+                                                      <block type="variables_set" id="adx_dx_zero">
+                                                        <field name="VAR" id="v_dx">dx</field>
+                                                        <value name="VALUE">
+                                                          <block type="math_number" id="adx_dx_z"><field name="NUM">0</field></block>
+                                                        </value>
+                                                      </block>
+                                                    </statement>
+                                                    <next>
+                                                      <block type="variables_set" id="adx_update_adx">
+                                                        <field name="VAR" id="v_adx">adx_value</field>
+                                                        <value name="VALUE">
+                                                          <block type="math_arithmetic" id="adx_smooth_adx">
+                                                            <field name="OP">DIVIDE</field>
                                                             <value name="A">
-                                                              <block type="logic_compare" id="put_rsi_high">
-                                                                <field name="OP">LT</field>
+                                                              <block type="math_arithmetic" id="adx_adx_add">
+                                                                <field name="OP">ADD</field>
                                                                 <value name="A">
-                                                                  <block type="variables_get" id="put_rsi_val1">
-                                                                    <field name="VAR" id="v_rsi">rsi_value</field>
+                                                                  <block type="math_arithmetic" id="adx_adx_mul">
+                                                                    <field name="OP">MULTIPLY</field>
+                                                                    <value name="A">
+                                                                      <block type="variables_get" id="adx_gadx1"><field name="VAR" id="v_adx">adx_value</field></block>
+                                                                    </value>
+                                                                    <value name="B">
+                                                                      <block type="math_number" id="adx_13"><field name="NUM">13</field></block>
+                                                                    </value>
                                                                   </block>
                                                                 </value>
                                                                 <value name="B">
-                                                                  <block type="math_number" id="put_rsi_max">
-                                                                    <field name="NUM">40</field>
-                                                                  </block>
+                                                                  <block type="variables_get" id="adx_gdx1"><field name="VAR" id="v_dx">dx</field></block>
                                                                 </value>
                                                               </block>
                                                             </value>
                                                             <value name="B">
-                                                              <block type="logic_compare" id="put_rsi_low">
-                                                                <field name="OP">GT</field>
-                                                                <value name="A">
-                                                                  <block type="variables_get" id="put_rsi_val2">
-                                                                    <field name="VAR" id="v_rsi">rsi_value</field>
-                                                                  </block>
-                                                                </value>
-                                                                <value name="B">
-                                                                  <block type="math_number" id="put_rsi_min">
-                                                                    <field name="NUM">30</field>
-                                                                  </block>
-                                                                </value>
-                                                              </block>
+                                                              <block type="math_number" id="adx_14"><field name="NUM">14</field></block>
                                                             </value>
                                                           </block>
                                                         </value>
-                                                      </block>
-                                                    </value>
-                                                    <value name="B">
-                                                      <block type="logic_compare" id="put_ema_trend">
-                                                        <field name="OP">LT</field>
-                                                        <value name="A">
-                                                          <block type="variables_get" id="put_ema_fast">
-                                                            <field name="VAR" id="v_ema_fast">ema_fast</field>
+                                                        <next>
+                                                          <block type="variables_set" id="adx_upd_pc">
+                                                            <field name="VAR" id="v_prev_close">prev_close</field>
+                                                            <value name="VALUE">
+                                                              <block type="candle_close" id="adx_gc"></block>
+                                                            </value>
+                                                            <next>
+                                                              <block type="variables_set" id="adx_upd_ph">
+                                                                <field name="VAR" id="v_prev_high">prev_high</field>
+                                                                <value name="VALUE">
+                                                                  <block type="candle_high" id="adx_gh_upd"></block>
+                                                                </value>
+                                                                <next>
+                                                                  <block type="variables_set" id="adx_upd_pl">
+                                                                    <field name="VAR" id="v_prev_low">prev_low</field>
+                                                                    <value name="VALUE">
+                                                                      <block type="candle_low" id="adx_gl_upd"></block>
+                                                                    </value>
+                                                                    <next>
+                                                                      <!-- BOLLINGER BANDS -->
+                                                                      <block type="bb_statement" id="set_bb_upper">
+                                                                        <field name="VARIABLE" id="v_bb_upper">upper_band</field>
+                                                                        <field name="BBRESULT_LIST">1</field>
+                                                                        <statement name="STATEMENT">
+                                                                          <block type="input_list" id="bb_upper_input" deletable="false" movable="false">
+                                                                            <value name="INPUT_LIST">
+                                                                              <block type="ticks" id="bb_upper_ticks" deletable="false" movable="false"></block>
+                                                                            </value>
+                                                                            <next>
+                                                                              <block type="period" id="bb_upper_period" deletable="false" movable="false">
+                                                                                <value name="PERIOD">
+                                                                                  <shadow type="math_number" id="bb_upper_period_val">
+                                                                                    <field name="NUM">15</field>
+                                                                                  </shadow>
+                                                                                </value>
+                                                                                <next>
+                                                                                  <block type="std_dev_multiplier_up" id="bb_upper_dev_up" deletable="false" movable="false">
+                                                                                    <value name="UPMULTIPLIER">
+                                                                                      <shadow type="math_number" id="bb_upper_dev_up_val">
+                                                                                        <field name="NUM">2</field>
+                                                                                      </shadow>
+                                                                                    </value>
+                                                                                    <next>
+                                                                                      <block type="std_dev_multiplier_down" id="bb_upper_dev_down" deletable="false" movable="false">
+                                                                                        <value name="DOWNMULTIPLIER">
+                                                                                          <shadow type="math_number" id="bb_upper_dev_down_val">
+                                                                                            <field name="NUM">2</field>
+                                                                                          </shadow>
+                                                                                        </value>
+                                                                                      </block>
+                                                                                    </next>
+                                                                                  </block>
+                                                                                </next>
+                                                                              </block>
+                                                                            </next>
+                                                                          </block>
+                                                                        </statement>
+                                                                        <next>
+                                                                          <block type="bb_statement" id="set_bb_middle">
+                                                                            <field name="VARIABLE" id="v_bb_middle">middle_band</field>
+                                                                            <field name="BBRESULT_LIST">0</field>
+                                                                            <statement name="STATEMENT">
+                                                                              <block type="input_list" id="bb_middle_input" deletable="false" movable="false">
+                                                                                <value name="INPUT_LIST">
+                                                                                  <block type="ticks" id="bb_middle_ticks" deletable="false" movable="false"></block>
+                                                                                </value>
+                                                                                <next>
+                                                                                  <block type="period" id="bb_middle_period" deletable="false" movable="false">
+                                                                                    <value name="PERIOD">
+                                                                                      <shadow type="math_number" id="bb_middle_period_val">
+                                                                                        <field name="NUM">15</field>
+                                                                                      </shadow>
+                                                                                    </value>
+                                                                                    <next>
+                                                                                      <block type="std_dev_multiplier_up" id="bb_middle_dev_up" deletable="false" movable="false">
+                                                                                        <value name="UPMULTIPLIER">
+                                                                                          <shadow type="math_number" id="bb_middle_dev_up_val">
+                                                                                            <field name="NUM">2</field>
+                                                                                          </shadow>
+                                                                                        </value>
+                                                                                        <next>
+                                                                                          <block type="std_dev_multiplier_down" id="bb_middle_dev_down" deletable="false" movable="false">
+                                                                                            <value name="DOWNMULTIPLIER">
+                                                                                              <shadow type="math_number" id="bb_middle_dev_down_val">
+                                                                                                <field name="NUM">2</field>
+                                                                                              </shadow>
+                                                                                            </value>
+                                                                                          </block>
+                                                                                        </next>
+                                                                                      </block>
+                                                                                    </next>
+                                                                                  </block>
+                                                                                </next>
+                                                                              </block>
+                                                                            </statement>
+                                                                            <next>
+                                                                              <block type="bb_statement" id="set_bb_lower">
+                                                                                <field name="VARIABLE" id="v_bb_lower">lower_band</field>
+                                                                                <field name="BBRESULT_LIST">2</field>
+                                                                                <statement name="STATEMENT">
+                                                                                  <block type="input_list" id="bb_lower_input" deletable="false" movable="false">
+                                                                                    <value name="INPUT_LIST">
+                                                                                      <block type="ticks" id="bb_lower_ticks" deletable="false" movable="false"></block>
+                                                                                    </value>
+                                                                                    <next>
+                                                                                      <block type="period" id="bb_lower_period" deletable="false" movable="false">
+                                                                                        <value name="PERIOD">
+                                                                                          <shadow type="math_number" id="bb_lower_period_val">
+                                                                                            <field name="NUM">15</field>
+                                                                                          </shadow>
+                                                                                        </value>
+                                                                                        <next>
+                                                                                          <block type="std_dev_multiplier_up" id="bb_lower_dev_up" deletable="false" movable="false">
+                                                                                            <value name="UPMULTIPLIER">
+                                                                                              <shadow type="math_number" id="bb_lower_dev_up_val">
+                                                                                                <field name="NUM">2</field>
+                                                                                              </shadow>
+                                                                                            </value>
+                                                                                            <next>
+                                                                                              <block type="std_dev_multiplier_down" id="bb_lower_dev_down" deletable="false" movable="false">
+                                                                                                <value name="DOWNMULTIPLIER">
+                                                                                                  <shadow type="math_number" id="bb_lower_dev_down_val">
+                                                                                                    <field name="NUM">2</field>
+                                                                                                  </shadow>
+                                                                                                </value>
+                                                                                              </block>
+                                                                                            </next>
+                                                                                          </block>
+                                                                                        </next>
+                                                                                      </block>
+                                                                                    </next>
+                                                                                  </block>
+                                                                                </statement>
+                                                                                <next>
+                                                                                  <block type="variables_set" id="set_bb_width">
+                                                                                    <field name="VAR" id="v_bb_width">bb_width</field>
+                                                                                    <value name="VALUE">
+                                                                                      <block type="math_arithmetic" id="bb_width_calc">
+                                                                                        <field name="OP">MINUS</field>
+                                                                                        <value name="A">
+                                                                                          <block type="variables_get" id="bb_width_upper">
+                                                                                            <field name="VAR" id="v_bb_upper">upper_band</field>
+                                                                                          </block>
+                                                                                        </value>
+                                                                                        <value name="B">
+                                                                                          <block type="variables_get" id="bb_width_lower">
+                                                                                            <field name="VAR" id="v_bb_lower">lower_band</field>
+                                                                                          </block>
+                                                                                        </value>
+                                                                                      </block>
+                                                                                    </value>
+                                                                                    <next>
+                                                                                      <block type="rsi_statement" id="set_rsi">
+                                                                                        <field name="VARIABLE" id="v_rsi">rsi_value</field>
+                                                                                        <statement name="STATEMENT">
+                                                                                          <block type="input_list" id="rsi_input" deletable="false" movable="false">
+                                                                                            <value name="INPUT_LIST">
+                                                                                              <block type="ticks" id="rsi_ticks" deletable="false" movable="false"></block>
+                                                                                            </value>
+                                                                                            <next>
+                                                                                              <block type="period" id="rsi_period" deletable="false" movable="false">
+                                                                                                <value name="PERIOD">
+                                                                                                  <shadow type="math_number" id="rsi_period_val">
+                                                                                                    <field name="NUM">14</field>
+                                                                                                  </shadow>
+                                                                                                </value>
+                                                                                              </block>
+                                                                                            </next>
+                                                                                          </block>
+                                                                                        </statement>
+                                                                                        <next>
+                                                                                          <block type="ema_statement" id="set_ema_fast">
+                                                                                            <field name="VARIABLE" id="v_ema_fast">ema_fast</field>
+                                                                                            <statement name="STATEMENT">
+                                                                                              <block type="input_list" id="ema_fast_input" deletable="false" movable="false">
+                                                                                                <value name="INPUT_LIST">
+                                                                                                  <block type="ticks" id="ema_fast_ticks" deletable="false" movable="false"></block>
+                                                                                                </value>
+                                                                                                <next>
+                                                                                                  <block type="period" id="ema_fast_period" deletable="false" movable="false">
+                                                                                                    <value name="PERIOD">
+                                                                                                      <shadow type="math_number" id="ema_fast_period_val">
+                                                                                                        <field name="NUM">15</field>
+                                                                                                      </shadow>
+                                                                                                    </value>
+                                                                                                  </block>
+                                                                                                </next>
+                                                                                              </block>
+                                                                                            </statement>
+                                                                                            <next>
+                                                                                              <block type="ema_statement" id="set_ema_slow">
+                                                                                                <field name="VARIABLE" id="v_ema_slow">ema_slow</field>
+                                                                                                <statement name="STATEMENT">
+                                                                                                  <block type="input_list" id="ema_slow_input" deletable="false" movable="false">
+                                                                                                    <value name="INPUT_LIST">
+                                                                                                      <block type="ticks" id="ema_slow_ticks" deletable="false" movable="false"></block>
+                                                                                                    </value>
+                                                                                                    <next>
+                                                                                                      <block type="period" id="ema_slow_period" deletable="false" movable="false">
+                                                                                                        <value name="PERIOD">
+                                                                                                          <shadow type="math_number" id="ema_slow_period_val">
+                                                                                                            <field name="NUM">50</field>
+                                                                                                          </shadow>
+                                                                                                        </value>
+                                                                                                      </block>
+                                                                                                    </next>
+                                                                                                  </block>
+                                                                                                </statement>
+                                                                                                <next>
+                                                                                                  <block type="controls_if" id="entry_decision">
+                                                                                                    <mutation xmlns="http://www.w3.org/1999/xhtml" elseif="1"></mutation>
+                                                                                                    <value name="IF0">
+                                                                                                      <block type="logic_operation" id="call_all_conditions">
+                                                                                                        <field name="OP">AND</field>
+                                                                                                        <value name="A">
+                                                                                                          <block type="logic_operation" id="call_conditions">
+                                                                                                            <field name="OP">AND</field>
+                                                                                                            <value name="A">
+                                                                                                              <block type="logic_operation" id="call_conditions_left">
+                                                                                                                <field name="OP">AND</field>
+                                                                                                                <value name="A">
+                                                                                                                  <block type="logic_operation" id="call_price_width">
+                                                                                                                    <field name="OP">AND</field>
+                                                                                                                    <value name="A">
+                                                                                                                      <block type="logic_compare" id="call_tick_upper">
+                                                                                                                        <field name="OP">GT</field>
+                                                                                                                        <value name="A">
+                                                                                                                          <block type="tick" id="call_tick"></block>
+                                                                                                                        </value>
+                                                                                                                        <value name="B">
+                                                                                                                          <block type="variables_get" id="call_upper_band">
+                                                                                                                            <field name="VAR" id="v_bb_middle">middle_band</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                      </block>
+                                                                                                                    </value>
+                                                                                                                    <value name="B">
+                                                                                                                      <block type="logic_operation" id="call_bb_range_check">
+                                                                                                                        <field name="OP">AND</field>
+                                                                                                                        <value name="A">
+                                                                                                                          <block type="logic_compare" id="call_bb_width_min">
+                                                                                                                            <field name="OP">GT</field>
+                                                                                                                            <value name="A">
+                                                                                                                              <block type="variables_get" id="call_bb_width_val_min">
+                                                                                                                                <field name="VAR" id="v_bb_width">bb_width</field>
+                                                                                                                              </block>
+                                                                                                                            </value>
+                                                                                                                            <value name="B">
+                                                                                                                              <block type="math_number" id="call_bb_min_threshold">
+                                                                                                                                <field name="NUM">0.2</field>
+                                                                                                                              </block>
+                                                                                                                            </value>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                        <value name="B">
+                                                                                                                          <block type="logic_compare" id="call_bb_width_max">
+                                                                                                                            <field name="OP">LT</field>
+                                                                                                                            <value name="A">
+                                                                                                                              <block type="variables_get" id="call_bb_width_val_max">
+                                                                                                                                <field name="VAR" id="v_bb_width">bb_width</field>
+                                                                                                                              </block>
+                                                                                                                            </value>
+                                                                                                                            <value name="B">
+                                                                                                                              <block type="math_number" id="call_bb_max_threshold">
+                                                                                                                                <field name="NUM">0.4</field>
+                                                                                                                              </block>
+                                                                                                                            </value>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                      </block>
+                                                                                                                    </value>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                                <value name="B">
+                                                                                                                  <block type="logic_operation" id="call_rsi_range">
+                                                                                                                    <field name="OP">AND</field>
+                                                                                                                    <value name="A">
+                                                                                                                      <block type="logic_compare" id="call_rsi_low">
+                                                                                                                        <field name="OP">GT</field>
+                                                                                                                        <value name="A">
+                                                                                                                          <block type="variables_get" id="call_rsi_val1">
+                                                                                                                            <field name="VAR" id="v_rsi">rsi_value</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                        <value name="B">
+                                                                                                                          <block type="math_number" id="call_rsi_min">
+                                                                                                                            <field name="NUM">60</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                      </block>
+                                                                                                                    </value>
+                                                                                                                    <value name="B">
+                                                                                                                      <block type="logic_compare" id="call_rsi_high">
+                                                                                                                        <field name="OP">LT</field>
+                                                                                                                        <value name="A">
+                                                                                                                          <block type="variables_get" id="call_rsi_val2">
+                                                                                                                            <field name="VAR" id="v_rsi">rsi_value</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                        <value name="B">
+                                                                                                                          <block type="math_number" id="call_rsi_max">
+                                                                                                                            <field name="NUM">70</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                      </block>
+                                                                                                                    </value>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                            <value name="B">
+                                                                                                              <block type="logic_compare" id="call_ema_trend">
+                                                                                                                <field name="OP">GT</field>
+                                                                                                                <value name="A">
+                                                                                                                  <block type="variables_get" id="call_ema_fast">
+                                                                                                                    <field name="VAR" id="v_ema_fast">ema_fast</field>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                                <value name="B">
+                                                                                                                  <block type="variables_get" id="call_ema_slow">
+                                                                                                                    <field name="VAR" id="v_ema_slow">ema_slow</field>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                        <value name="B">
+                                                                                                          <block type="logic_compare" id="call_adx_strong">
+                                                                                                            <field name="OP">GT</field>
+                                                                                                            <value name="A">
+                                                                                                              <block type="variables_get" id="call_adx_val">
+                                                                                                                <field name="VAR" id="v_adx">adx_value</field>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                            <value name="B">
+                                                                                                              <block type="math_number" id="call_adx_threshold">
+                                                                                                                <field name="NUM">20</field>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                    <statement name="DO0">
+                                                                                                      <block type="controls_if" id="call_position_guard">
+                                                                                                        <value name="IF0">
+                                                                                                          <block type="logic_negate" id="call_not_selling">
+                                                                                                            <value name="BOOL">
+                                                                                                              <block type="check_sell" id="call_check_sell"></block>
+                                                                                                            </value>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                        <statement name="DO0">
+                                                                                                          <block type="purchase" id="buy_call">
+                                                                                                            <field name="PURCHASE_LIST">CALL</field>
+                                                                                                          </block>
+                                                                                                        </statement>
+                                                                                                      </block>
+                                                                                                    </statement>
+                                                                                                    <value name="IF1">
+                                                                                                      <block type="logic_operation" id="put_all_conditions">
+                                                                                                        <field name="OP">AND</field>
+                                                                                                        <value name="A">
+                                                                                                          <block type="logic_operation" id="put_conditions">
+                                                                                                            <field name="OP">AND</field>
+                                                                                                            <value name="A">
+                                                                                                              <block type="logic_operation" id="put_conditions_left">
+                                                                                                                <field name="OP">AND</field>
+                                                                                                                <value name="A">
+                                                                                                                  <block type="logic_operation" id="put_price_width">
+                                                                                                                    <field name="OP">AND</field>
+                                                                                                                    <value name="A">
+                                                                                                                      <block type="logic_compare" id="put_tick_lower">
+                                                                                                                        <field name="OP">LT</field>
+                                                                                                                        <value name="A">
+                                                                                                                          <block type="tick" id="put_tick"></block>
+                                                                                                                        </value>
+                                                                                                                        <value name="B">
+                                                                                                                          <block type="variables_get" id="put_lower_band">
+                                                                                                                            <field name="VAR" id="v_bb_middle">middle_band</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                      </block>
+                                                                                                                    </value>
+                                                                                                                    <value name="B">
+                                                                                                                      <block type="logic_operation" id="put_bb_range_check">
+                                                                                                                        <field name="OP">AND</field>
+                                                                                                                        <value name="A">
+                                                                                                                          <block type="logic_compare" id="put_bb_width_min">
+                                                                                                                            <field name="OP">GT</field>
+                                                                                                                            <value name="A">
+                                                                                                                              <block type="variables_get" id="put_bb_width_val_min">
+                                                                                                                                <field name="VAR" id="v_bb_width">bb_width</field>
+                                                                                                                              </block>
+                                                                                                                            </value>
+                                                                                                                            <value name="B">
+                                                                                                                              <block type="math_number" id="put_bb_min_threshold">
+                                                                                                                                <field name="NUM">0.2</field>
+                                                                                                                              </block>
+                                                                                                                            </value>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                        <value name="B">
+                                                                                                                          <block type="logic_compare" id="put_bb_width_max">
+                                                                                                                            <field name="OP">LT</field>
+                                                                                                                            <value name="A">
+                                                                                                                              <block type="variables_get" id="put_bb_width_val_max">
+                                                                                                                                <field name="VAR" id="v_bb_width">bb_width</field>
+                                                                                                                              </block>
+                                                                                                                            </value>
+                                                                                                                            <value name="B">
+                                                                                                                              <block type="math_number" id="put_bb_max_threshold">
+                                                                                                                                <field name="NUM">0.4</field>
+                                                                                                                              </block>
+                                                                                                                            </value>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                      </block>
+                                                                                                                    </value>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                                <value name="B">
+                                                                                                                  <block type="logic_operation" id="put_rsi_range">
+                                                                                                                    <field name="OP">AND</field>
+                                                                                                                    <value name="A">
+                                                                                                                      <block type="logic_compare" id="put_rsi_high">
+                                                                                                                        <field name="OP">LT</field>
+                                                                                                                        <value name="A">
+                                                                                                                          <block type="variables_get" id="put_rsi_val1">
+                                                                                                                            <field name="VAR" id="v_rsi">rsi_value</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                        <value name="B">
+                                                                                                                          <block type="math_number" id="put_rsi_max">
+                                                                                                                            <field name="NUM">40</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                      </block>
+                                                                                                                    </value>
+                                                                                                                    <value name="B">
+                                                                                                                      <block type="logic_compare" id="put_rsi_low">
+                                                                                                                        <field name="OP">GT</field>
+                                                                                                                        <value name="A">
+                                                                                                                          <block type="variables_get" id="put_rsi_val2">
+                                                                                                                            <field name="VAR" id="v_rsi">rsi_value</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                        <value name="B">
+                                                                                                                          <block type="math_number" id="put_rsi_min">
+                                                                                                                            <field name="NUM">30</field>
+                                                                                                                          </block>
+                                                                                                                        </value>
+                                                                                                                      </block>
+                                                                                                                    </value>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                            <value name="B">
+                                                                                                              <block type="logic_compare" id="put_ema_trend">
+                                                                                                                <field name="OP">LT</field>
+                                                                                                                <value name="A">
+                                                                                                                  <block type="variables_get" id="put_ema_fast">
+                                                                                                                    <field name="VAR" id="v_ema_fast">ema_fast</field>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                                <value name="B">
+                                                                                                                  <block type="variables_get" id="put_ema_slow">
+                                                                                                                    <field name="VAR" id="v_ema_slow">ema_slow</field>
+                                                                                                                  </block>
+                                                                                                                </value>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                        <value name="B">
+                                                                                                          <block type="logic_compare" id="put_adx_strong">
+                                                                                                            <field name="OP">GT</field>
+                                                                                                            <value name="A">
+                                                                                                              <block type="variables_get" id="put_adx_val">
+                                                                                                                <field name="VAR" id="v_adx">adx_value</field>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                            <value name="B">
+                                                                                                              <block type="math_number" id="put_adx_threshold">
+                                                                                                                <field name="NUM">20</field>
+                                                                                                              </block>
+                                                                                                            </value>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                      </block>
+                                                                                                    </value>
+                                                                                                    <statement name="DO1">
+                                                                                                      <block type="controls_if" id="put_position_guard">
+                                                                                                        <value name="IF0">
+                                                                                                          <block type="logic_negate" id="put_not_selling">
+                                                                                                            <value name="BOOL">
+                                                                                                              <block type="check_sell" id="put_check_sell"></block>
+                                                                                                            </value>
+                                                                                                          </block>
+                                                                                                        </value>
+                                                                                                        <statement name="DO0">
+                                                                                                          <block type="purchase" id="buy_put">
+                                                                                                            <field name="PURCHASE_LIST">PUT</field>
+                                                                                                          </block>
+                                                                                                        </statement>
+                                                                                                      </block>
+                                                                                                    </statement>
+                                                                                                  </block>
+                                                                                                </next>
+                                                                                              </block>
+                                                                                            </next>
+                                                                                          </block>
+                                                                                        </next>
+                                                                                      </block>
+                                                                                    </next>
+                                                                                  </block>
+                                                                                </next>
+                                                                              </block>
+                                                                            </next>
+                                                                          </block>
+                                                                        </next>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </next>
                                                           </block>
-                                                        </value>
-                                                        <value name="B">
-                                                          <block type="variables_get" id="put_ema_slow">
-                                                            <field name="VAR" id="v_ema_slow">ema_slow</field>
-                                                          </block>
-                                                        </value>
+                                                        </next>
                                                       </block>
-                                                    </value>
+                                                    </next>
                                                   </block>
-                                                </value>
-                                                <value name="B">
-                                                  <block type="logic_compare" id="put_adx_strong">
-                                                    <field name="OP">GT</field>
-                                                    <value name="A">
-                                                      <block type="variables_get" id="put_adx_val">
-                                                        <field name="VAR" id="v_adx">adx_value</field>
-                                                      </block>
-                                                    </value>
-                                                    <value name="B">
-                                                      <block type="math_number" id="put_adx_threshold">
-                                                        <field name="NUM">20</field>
-                                                      </block>
-                                                    </value>
-                                                  </block>
-                                                </value>
+                                                </next>
                                               </block>
-                                            </value>
-                                            <statement name="DO1">
-                                              <block type="controls_if" id="put_position_guard">
-                                                <value name="IF0">
-                                                  <block type="logic_negate" id="put_not_selling">
-                                                    <value name="BOOL">
-                                                      <block type="check_sell" id="put_check_sell"></block>
-                                                    </value>
-                                                  </block>
-                                                </value>
-                                                <statement name="DO0">
-                                                  <block type="purchase" id="buy_put">
-                                                    <field name="PURCHASE_LIST">PUT</field>
-                                                  </block>
-                                                </statement>
-                                              </block>
-                                            </statement>
+                                            </next>
                                           </block>
                                         </next>
                                       </block>
@@ -748,3 +1350,4 @@
   </block>
 
 </xml>
+
