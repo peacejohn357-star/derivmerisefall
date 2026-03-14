@@ -1,83 +1,20 @@
-<xml xmlns="http://www.w3.org/1999/xhtml">
-  <block type="if" id="Gvx!D-=V[UVqffz)^6w_" x="114" y="65">
-    <value name="condition">
-      <block type="comparison" id="nS6lB!ZQm2.r9Ek;O@VP">
-        <field name="OP">EQ</field>
-        <value name="A">
-          <block type="variable_get" id="VAZ=j!$Lve6u}dHw3C)u">
-            <field name="VAR">last_signal</field>
-          </block>
-        </value>
-        <value name="B">
-          <block type="text" id=":0GPKH]7vaz+!c=-AF*s">
-            <field name="TEXT">CALL</field>
-          </block>
-        </value>
-      </block>
-    </value>
-    <statement name="do">
-      <block type="set_variable" id="Joj(m*4$K5c#W8RnbaO">
-        <field name="VAR">upper_band</field>
-        <value name="VALUE">
-          <block type="math_number" id="XW6hXa06O!cLBIW^Rm^6">
-            <field name="NUM">1.2</field>
-          </block>
-        </value>
-      </block>
-    </statement>
-  </block>
-  <block type="if" id="dA+GQ7AqmM8[d}5nE/UM" x="114" y="146">
-    <value name="condition">
-      <block type="comparison" id="lrqeJ=6#/$UQzDce-W>}">
-        <field name="OP">EQ</field>
-        <value name="A">
-          <block type="variable_get" id="t$Vz#8mBxf|^mOl!S3S7">
-            <field name="VAR">last_signal</field>
-          </block>
-        </value>
-        <value name="B">
-          <block type="text" id="8j$R!*Z@UB@cAph+8oKs">
-            <field name="TEXT">PUT</field>
-          </block>
-        </value>
-      </block>
-    </value>
-    <statement name="do">
-      <block type="set_variable" id="/L;:XB =T7cO;0Urv]?0">
-        <field name="VAR">lower_band</field>
-        <value name="VALUE">
-          <block type="math_number" id="}1]0e#t03|SgBhGjj=hf">
-            <field name="NUM">0.8</field>
-          </block>
-        </value>
-      </block>
-    </statement>
-  </block>
-  <block type="if" id="F@H*ATOQ23wsg=4h]ZTa" x="114" y="227">
-    <value name="condition">
-      <block type="comparison" id="CODc=x((2^67HMaetWO,">
-        <field name="OP">LT</field>
-        <value name="A">
-          <block type="variable_get" id="qY7/V#XQ$43TYbD$8qj!">
-            <field name="VAR">rsi</field>
-          </block>
-        </value>
-        <value name="B">
-          <block type="math_number" id="zo)a/C!A0F^:_-K?9{BF">
-            <field name="NUM">30</field>
-          </block>
-        </value>
-      </block>
-    </value>
-    <statement name="do">
-      <block type="call_function" id="ahzaa=7$H7+l)lko4Z=0">
-        <field name="NAME">buy_call</field>
-        <value name="value">
-          <block type="math_number" id="DQJ2*gze#7p40oT2#Y=1">
-            <field name="NUM">1</field>
-          </block>
-        </value>
-      </block>
-    </statement>
-  </block>
+<xml>
+  <entry_price_call></entry_price_call>
+  <entry_price_put></entry_price_put>
+  <last_signal></last_signal>
+  <logic>
+    <check CALL="true" />
+    <current_price>{current_price}</current_price>
+    <entry_price>{entry_price_call}</entry_price>
+    <if>
+      <condition>current_price > entry_price_call</condition>
+      <action>do_something_for_CALL</action>
+    </if>
+    <check CALL="false" />
+    <entry_price>{entry_price_put}</entry_price>
+    <if>
+      <condition>current_price < entry_price_put</condition>
+      <action>do_something_for_PUT</action>
+    </if>
+  </logic>
 </xml>
